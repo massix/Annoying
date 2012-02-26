@@ -196,13 +196,13 @@ int main (int argc, const char * argv[])
 			
 		default:
 		{
-			unsigned long long int draws = 0;
-			unsigned long long int playerw = 0;
-			unsigned long long int cpuw = 0;
+			auto draws = 0;
+			auto playerw = 0;
+			auto cpuw = 0;
 			
 			if (crossed) {
-				for (move_vector::iterator ite = player.begin(); ite != player.end(); ++ite) {
-					for (move_vector::iterator ite_cpu = cpu.begin(); ite_cpu != cpu.end(); ++ite_cpu) {
+				for (auto ite = player.begin(); ite != player.end(); ++ite) {
+					for (auto ite_cpu = cpu.begin(); ite_cpu != cpu.end(); ++ite_cpu) {
 						if ((**ite_cpu) == (**ite)) 
 							draws++;
 						
@@ -275,10 +275,10 @@ int main (int argc, const char * argv[])
 			break;
 			
 		default:
-			for (move_vector::iterator ite = player.begin(); ite != player.end(); ++ite)
+			for (auto ite = player.begin(); ite != player.end(); ++ite)
 				delete (*ite);
 			
-			for (move_vector::iterator ite = cpu.begin(); ite != cpu.end(); ++ite)
+			for (auto ite = cpu.begin(); ite != cpu.end(); ++ite)
 				delete (*ite);
 			
 			kill (child, 9);

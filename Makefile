@@ -10,7 +10,7 @@ SOURCES	=		rock.cpp \
 				
 OBJS		=	$(SOURCES:.cpp=.o)
 
-CPPFLAGS	=	-Wall -O2
+CPPFLAGS	=	-Wall -O2 -std=c++11
 
 .PHONY: clean
 
