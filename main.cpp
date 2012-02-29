@@ -26,6 +26,10 @@ typedef std::vector<move*> move_vector;
 
 unsigned int hands = 0;
 unsigned long int *plays = 0;
+char *savefile = 0;
+bool save = false;
+bool singleplay = false;
+bool append = false;
 
 
 bool crossed = true;
@@ -42,9 +46,14 @@ void infinite_circle (unsigned int useconds);
 void usage (const char *prgname) {
 	printf ("Usage: %s --plays <num> [arguments]\n"
 			"    --plays <num>    - number of plays\n"
-			"    --usage|--help   - prints this and exit\n"
+			"    --save <name>    - log the plays into file named <name>\n"
+			"    --verbose        - log also every play and not only the final statistics\n"
+			"                       WARNING: this option may produce a VERY large file!!\n"
+			"    --append         - append the result to the file instead of truncating it\n"
 			"    --straight       - don't cross the arrays\n"
-			"    --crossed        - cross the arrays [default]\n", prgname);
+			"    --crossed        - cross the arrays [default]\n"
+			"    --usage          - prints this and exit\n"
+			"    --help           - prints this and exit\n", prgname);
 }
 
 void infinite_circle (unsigned int useconds) {
@@ -93,7 +102,7 @@ int main (int argc, const char * argv[])
 	while (c < argc) {
 		if (strcmp(argv[c], "--plays") == 0) {
 			if (++c >= argc) {
-				fprintf(stderr, "--plays requires an int");
+				fprintf(stderr, "--plays requires an int\n");
 				return -1;
 			}
 			else hands = atoi(argv[c]);
@@ -116,6 +125,21 @@ int main (int argc, const char * argv[])
 		if (strcmp(argv[c], "--crossed") == 0) 
 			crossed = true;
 		
+		if (strcmp(argv[c], "--verbose") == 0)
+			singleplay = true;
+
+		if (strcmp(argv[c], "--append") == 0)
+			append = true;
+
+		if (strcmp(argv[c], "--save") == 0) {
+			if (++c >= argc) {
+				fprintf (stderr, "--save requires a filename\n");
+				return -1;
+			}
+			else savefile = (char *) argv[c];
+			save = true;
+		}
+
 		c++;
 	}
 	
@@ -143,6 +167,18 @@ int main (int argc, const char * argv[])
 	
 	std::cout << "Playing " << hands << (crossed? " crossed " : " straight ") << "hands." << std::endl;
 	
+	FILE *logfile;
+	char *mode;
+	if (append)
+		mode = (char *) "a";
+	else
+		mode = (char *) "w";
+
+	if (save) {
+		std::cout << "Saving results to " << savefile << std::endl;
+		logfile = fopen(savefile, mode);
+	}
+
 	pid_t child = fork ();
 	switch (child) {
 		case 0:
@@ -203,14 +239,23 @@ int main (int argc, const char * argv[])
 			if (crossed) {
 				for (auto ite = player.begin(); ite != player.end(); ++ite) {
 					for (auto ite_cpu = cpu.begin(); ite_cpu != cpu.end(); ++ite_cpu) {
-						if ((**ite_cpu) == (**ite)) 
+						if ((**ite_cpu) == (**ite)) {
 							draws++;
+							if (save && singleplay)
+								fprintf(logfile, "Player: %c, CPU: %c    draw\n", (*ite)->id(), (*ite_cpu)->id());
+						}
 						
-						else if ((**ite_cpu) > (**ite)) 
+						else if ((**ite_cpu) > (**ite)) {
 							cpuw++;
+							if (save && singleplay)
+								fprintf(logfile, "Player: %c, CPU: %c    CPU WON\n", (*ite)->id(), (*ite_cpu)->id());
+						}
 						
-						else 
+						else {
 							playerw++;
+							if (save && singleplay)
+								fprintf(logfile, "Player: %c, CPU: %c    PLAYER WON\n", (*ite)->id(), (*ite_cpu)->id());
+						}
 						
 						(*plays)++;
 					}
@@ -218,14 +263,23 @@ int main (int argc, const char * argv[])
 			}
 			else {
 				for (unsigned long int i = 0; i < hands; i++) {
-					if (*(player[i]) == *(cpu[i])) 
+					if (*(player[i]) == *(cpu[i])) {
 						draws++;
+						if (save && singleplay)
+							fprintf(logfile, "Player: %c, CPU: %c    draw\n", (*player[i]).id(), (*cpu[i]).id());
+					}
 					
-					else if (*(player[i]) > *(cpu[i]))
+					else if (*(player[i]) > *(cpu[i])) {
 						cpuw++;
+						if (save && singleplay)
+							fprintf(logfile, "Player: %c, CPU: %c    CPU WON\n", (*player[i]).id(), (*cpu[i]).id());
+					}
 					
-					else 
+					else {
 						playerw++;
+						if (save && singleplay)
+							fprintf(logfile, "Player: %c, CPU: %c    PLAYER WON\n", (*player[i]).id(), (*cpu[i]).id());
+					}
 					
 					(*plays)++;
 				}
@@ -238,6 +292,13 @@ int main (int argc, const char * argv[])
 			std::cout << "CPU    won " << cpuw << " hands." << std::endl;
 			std::cout << "Draws      " << draws << " hands." << std::endl;
 			std::cout << "Hands done " << playerw + cpuw + draws << " ." << std::endl;
+			if (save)
+				fprintf(logfile,
+						"\n\n---- RESULTS ----\n"
+						"Player won %d hands.\n"
+						"CPU    won %d hands.\n"
+						"Draws      %d hands.\n"
+						"Hands done %d.\n", playerw, cpuw, draws, (playerw+cpuw+draws));
 	
 			long double thands = (crossed? (hands*hands) : hands);
 			printf("\n\n---- STATISTICS ----\n"
@@ -247,7 +308,20 @@ int main (int argc, const char * argv[])
 				   ((long double)playerw / thands) * 100.0,
 				   ((long double)cpuw / thands) * 100.0,
 				   ((long double)draws / thands) * 100.0);
+			if (save)
+				fprintf(logfile, "\n\n---- STATISTICS ----\n"
+					   "Player won %0.2Lf%% games \n"
+					   "CPU    won %0.2Lf%% games \n"
+					   "A total of %0.2Lf%% games were a draw \n",
+					   ((long double)playerw / thands) * 100.0,
+					   ((long double)cpuw / thands) * 100.0,
+					   ((long double)draws / thands) * 100.0);
 			
+			// Close opened file
+			if (save) {
+				fflush(logfile);
+				fclose(logfile);
+			}
 
 			break;
 		}
@@ -264,7 +338,7 @@ int main (int argc, const char * argv[])
 	e = shmctl(shmid, IPC_RMID, 0);
 	if (e == -1)
 		perror("shmctl()");
-	
+
 	// Free the arrays
 	child = fork();
 	switch (child) {
