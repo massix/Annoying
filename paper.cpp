@@ -27,9 +27,9 @@ bool paper::beats (const move &other) const
 	switch (other.id ())
 	{
 		case 'L': return false; break;
-		case 'K': return false; break;
+		case 'K': return true; break;
 		case 'R': return true; break;
-		case 'S': return true; break;
+		case 'S': return false; break;
 		case 'P': return false; break;
 		default: return false; break;
 	}

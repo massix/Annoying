@@ -19,7 +19,7 @@ spock::~spock ()
 
 char spock::id () const
 {
-	return 'R';
+	return 'K';
 }
 
 bool spock::beats (const move &other) const

@@ -19,7 +19,7 @@ lizard::~lizard ()
 
 char lizard::id () const
 {
-	return 'R';
+	return 'L';
 }
 
 bool lizard::beats (const move &other) const
