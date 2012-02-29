@@ -1,4 +1,4 @@
-CC			=	g++
+CC			=	clang++
 
 TARGET		=	Annoying
 SOURCES	=		rock.cpp \
@@ -10,17 +10,18 @@ SOURCES	=		rock.cpp \
 				
 OBJS		=	$(SOURCES:.cpp=.o)
 
-CPPFLAGS	=	-Wall -O2 -std=c++11
+CPPFLAGS	=	-Wall -O2 -arch x86_64 -std=c++0x -stdlib=libc++
+LDFLAGS		=	-stdlib=libc++
 
 .PHONY: clean
 
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(CC) -o $(TARGET) $(OBJS)
+	$(CC) $(LDFLAGS) -o $(TARGET) $(OBJS)
 
 %.o : %.cpp
-	$(CC) $(CPPFLAGS) -c $<
+	$(CC) $(CPPFLAGS) -c $< -o $@
 	
 clean:
 	rm -fr $(OBJS) $(TARGET)
