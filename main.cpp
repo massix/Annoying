@@ -263,22 +263,32 @@ int main (int argc, const char * argv[])
 			}
 			else {
 				for (unsigned long int i = 0; i < hands; i++) {
+					move* player_move = player[i];
+					move* cpu_move = cpu[i];
 					if (*(player[i]) == *(cpu[i])) {
 						draws++;
 						if (save && singleplay)
-							fprintf(logfile, "Player: %c, CPU: %c    draw\n", (*player[i]).id(), (*cpu[i]).id());
+						{
+							fprintf(logfile,
+									"Player: %c, CPU: %c    draw\n",
+									player_move->id(), cpu_move->id());
+						}
 					}
 					
 					else if (*(player[i]) > *(cpu[i])) {
 						cpuw++;
 						if (save && singleplay)
-							fprintf(logfile, "Player: %c, CPU: %c    CPU WON\n", (*player[i]).id(), (*cpu[i]).id());
+							fprintf(logfile,
+									"Player: %c, CPU: %c    CPU WON\n",
+									player_move->id(), cpu_move->id());
 					}
 					
 					else {
 						playerw++;
 						if (save && singleplay)
-							fprintf(logfile, "Player: %c, CPU: %c    PLAYER WON\n", (*player[i]).id(), (*cpu[i]).id());
+							fprintf(logfile,
+									"Player: %c, CPU: %c    PLAYER WON\n",
+									player_move->id(), cpu_move->id());
 					}
 					
 					(*plays)++;

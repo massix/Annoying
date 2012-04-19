@@ -10,7 +10,7 @@ SOURCES	=		rock.cpp \
 				
 OBJS		=	$(SOURCES:.cpp=.o)
 
-CPPFLAGS	=	-Wall -O2 -arch x86_64 -std=c++0x -stdlib=libc++
+CPPFLAGS	=	-I. -I/usr/include/c++/v1 -Wall -O2 -arch x86_64 -std=c++0x -stdlib=libc++
 LDFLAGS		=	-stdlib=libc++
 
 .PHONY: clean
